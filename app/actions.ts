@@ -2241,7 +2241,7 @@ export async function sendSupportEmail(subject: string, message: string, entityN
       from: "notification@datalazo.net",
       to: "notification@vrtservices12.com",
       replyTo: "crm@ostooechei.resend.app",
-      subject: `[Portal Support] ${subject}`,
+      subject: `[${customerId || "NO-CUST-ID"}] ${subject}`,
       html: `
         <h2>New Support Request from Client Portal</h2>
         <p><strong>Customer:</strong> ${entityName}</p>
