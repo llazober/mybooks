@@ -2197,6 +2197,7 @@ export async function uploadDocument(formData: FormData): Promise<{ ok: boolean;
     const file = formData.get("file") as File;
     const entityId = formData.get("entityId") as string;
     const customerId = formData.get("customerId") as string;
+    const entityName = formData.get("entityName") as string || "Unknown";
 
     if (!file || !entityId) {
       return { ok: false, error: "Missing file or entity context." };
@@ -2213,10 +2214,16 @@ export async function uploadDocument(formData: FormData): Promise<{ ok: boolean;
 
     const buffer = Buffer.from(await file.arrayBuffer());
     
-    // Construct the prefix (customer ID or entity ID)
-    const prefix = customerId ? customerId : entityId;
-    // Keep original filename but prepend timestamp to prevent overwrites
-    const key = `${prefix}/inbox/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+    let key: string;
+    if (customerId) {
+      // Extract numeric ID from e.g., "CUST-4061"
+      const cleanId = customerId.replace(/[^0-9]/g, "");
+      // Replicate the vrtservices CRM path structure: parent/customers/{id}_{name}/Inbox/filename
+      const folderName = `VRT Services/customers/${cleanId || customerId}_${entityName}`;
+      key = `${folderName}/Inbox/${file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "_")}`;
+    } else {
+      key = `${entityId}/Inbox/${file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "_")}`;
+    }
 
     await s3.send(new PutObjectCommand({
       Bucket: process.env.DO_SPACES_BUCKET!,

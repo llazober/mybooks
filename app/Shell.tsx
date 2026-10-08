@@ -511,7 +511,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
         ) : tab === "Export" && session?.role === "ADMIN" ? (
           <ExportView key={active.id + ":" + dataVersion} entityId={active.id} />
         ) : tab === "Upload" ? (
-          <UploadView key={active.id} entityId={active.id} customerId={active.customerId} />
+          <UploadView key={active.id} entityId={active.id} customerId={active.customerId} entityName={active.name} />
         ) : null}
       </main>
 

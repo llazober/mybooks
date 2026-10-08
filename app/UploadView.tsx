@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { uploadDocument } from "./actions";
 
-export default function UploadView({ entityId, customerId }: { entityId: string; customerId?: string }) {
+export default function UploadView({ entityId, customerId, entityName }: { entityId: string; customerId?: string; entityName: string }) {
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<string>("");
   const [uploading, setUploading] = useState(false);
@@ -44,6 +44,7 @@ export default function UploadView({ entityId, customerId }: { entityId: string;
       const formData = new FormData();
       formData.append("file", file);
       formData.append("entityId", entityId);
+      formData.append("entityName", entityName);
       if (customerId) formData.append("customerId", customerId);
 
       const res = await uploadDocument(formData);
