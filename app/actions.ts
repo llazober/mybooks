@@ -2195,43 +2195,34 @@ export async function adminResetCompanyPassword(entityId: string) {
 export async function uploadDocument(formData: FormData): Promise<{ ok: boolean; error?: string }> {
   try {
     const file = formData.get("file") as File;
-    const entityId = formData.get("entityId") as string;
     const customerId = formData.get("customerId") as string;
-    const entityName = formData.get("entityName") as string || "Unknown";
 
-    if (!file || !entityId) {
-      return { ok: false, error: "Missing file or entity context." };
+    if (!file || !customerId) {
+      return { ok: false, error: "Missing file or customerId context." };
     }
 
-    const s3 = new S3Client({
-      endpoint: process.env.DO_SPACES_ENDPOINT!,
-      region: process.env.DO_SPACES_REGION!,
-      credentials: {
-        accessKeyId: process.env.DO_SPACES_KEY!,
-        secretAccessKey: process.env.DO_SPACES_SECRET!,
-      },
+    // Proxy the upload directly to the main CRM backend.
+    // This perfectly delegates DO Spaces upload, PDF conversion, Auto-renaming, OCR AI, 
+    // and Customer Email Notifications to the main python application!
+    const crmFormData = new FormData();
+    crmFormData.append("file", file);
+    crmFormData.append("customer_id", customerId);
+    crmFormData.append("subfolder", "Inbox");
+
+    const res = await fetch("https://vrtservices12.com/api/portal/upload", {
+      method: "POST",
+      body: crmFormData,
     });
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    
-    let key: string;
-    if (customerId) {
-      // Extract numeric ID from e.g., "CUST-4061"
-      const cleanId = customerId.replace(/[^0-9]/g, "");
-      // Replicate the vrtservices CRM path structure: parent/customers/{id}_{name}/Inbox/filename
-      const folderName = `VRT Services/customers/${cleanId || customerId}_${entityName}`;
-      key = `${folderName}/Inbox/${file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "_")}`;
-    } else {
-      key = `${entityId}/Inbox/${file.name.replace(/[^a-zA-Z0-9.\-_ ]/g, "_")}`;
+    if (!res.ok) {
+      let errorData;
+      try {
+        errorData = await res.json();
+      } catch (e) {
+        errorData = await res.text();
+      }
+      throw new Error(`CRM Upload Rejected (${res.status}): ${JSON.stringify(errorData)}`);
     }
-
-    await s3.send(new PutObjectCommand({
-      Bucket: process.env.DO_SPACES_BUCKET!,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type || "application/octet-stream",
-      ACL: "private", // DO spaces supports ACLs
-    }));
 
     return { ok: true };
   } catch (error: any) {
