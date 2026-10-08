@@ -2259,3 +2259,57 @@ export async function sendSupportEmail(subject: string, message: string, entityN
     return { ok: false, error: error.message || "Email sending failed." };
   }
 }
+
+export async function forgotPassword(email: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() }
+    });
+
+    if (!user) {
+      // The user explicitly requested to prompt the user if the email does not exist.
+      return { ok: false, error: "This email does not exist in the system." };
+    }
+
+    // Generate random 8 character password
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+    let tempPassword = "";
+    for (let i = 0; i < 8; i++) {
+      tempPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        password: hashedPassword,
+        requiresPasswordChange: true 
+      }
+    });
+
+    const resend = new Resend(process.env.RESEND_API_KEY!);
+    
+    await resend.emails.send({
+      from: "notification@datalazo.net",
+      to: user.email,
+      replyTo: "crm@ostooechei.resend.app",
+      subject: "VRT Services - Temporary Password",
+      html: `
+        <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
+          <h2>Password Reset Request</h2>
+          <p>A password reset was requested for your account (${user.email}).</p>
+          <p>Your temporary password is: <strong style="font-size: 18px; color: #0d9488;">${tempPassword}</strong></p>
+          <p>Please log in with this temporary password. You will be required to choose a new password immediately upon logging in.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #6b7280;">If you did not request this reset, please contact support immediately.</p>
+        </div>
+      `,
+    });
+
+    return { ok: true };
+  } catch (error: any) {
+    console.error("Forgot password failed:", error);
+    return { ok: false, error: "An unexpected error occurred while resetting the password." };
+  }
+}
