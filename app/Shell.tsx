@@ -80,8 +80,6 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
   // Theme: purely a visual skin. "default" | "pretty" | "dark" | "america250". No data change.
   const [theme, setTheme] = useState<"default" | "pretty" | "dark" | "america250" | "modern">("pretty");
   const [collapsed, setCollapsed] = useState(false);
-  // Admin mode (UI gate; deterrent only — see deleteEntity note).
-  const [admin, setAdmin] = useState(false);
   const [reseeding, setReseeding] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
@@ -185,7 +183,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
               Reset PW
             </button>
           ) : null}
-          {admin && e.id !== SAMPLE_ID ? (
+          {session?.role === "ADMIN" && e.id !== SAMPLE_ID ? (
             <button
               className="danger entity-del"
               title={"Delete " + e.name}
@@ -288,18 +286,6 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
     setLPass("");
     setLOwner(localStorage.getItem("beanbooks.owner") || prot.owner || "");
     setLoginFor(e);
-  }
-
-  async function toggleAdmin() {
-    if (admin) {
-      setAdmin(false);
-      return;
-    }
-    const pw = window.prompt("Enter admin password:");
-    if (pw === null) return;
-    const res = await verifyAdmin(pw);
-    if (res.ok) setAdmin(true);
-    else window.alert("Incorrect admin password.");
   }
 
   // Overwrite the read-only Sample Company with the current bundled sample
@@ -436,15 +422,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
 
         {!collapsed && (
           <div className="nav-footer">
-            <button
-              className={admin ? "danger" : ""}
-              style={{ width: "100%" }}
-              onClick={toggleAdmin}
-              title="Admin mode lets you delete company files"
-            >
-              {admin ? "🔓 Admin mode: ON" : "🔒 Admin mode"}
-            </button>
-            {admin ? (
+            {session?.role === "ADMIN" ? (
               <button
                 style={{ width: "100%", marginTop: 8 }}
                 onClick={handleReseed}
