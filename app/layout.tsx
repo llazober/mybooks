@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 import "./app.css";
 
-const SITE_URL = "https://booking.vrtservices12.com";
+const SITE_URL = "https://mybooks.vrtservices12.com";
 const DESC =
   "Plain-text general ledger accounting — professional P&L, P&L Detail, and Balance Sheet you fully own.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "booking.vrtservices12.com",
+  title: "VRT Services",
   description: DESC,
   openGraph: {
-    title: "booking.vrtservices12.com",
+    title: "VRT Services",
     description: DESC,
     url: SITE_URL,
-    siteName: "booking.vrtservices12.com",
+    siteName: "VRT Services",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "booking.vrtservices12.com",
+    title: "VRT Services",
     description: DESC,
   },
 };
