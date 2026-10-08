@@ -28,7 +28,19 @@ async function main() {
     },
   });
 
-  console.log("Admin users created/verified:", admin1.email, admin2.email);
+  const admin3PasswordHash = await bcrypt.hash('hon12345', 10);
+  const admin3 = await prisma.user.upsert({
+    where: { email: 'vrtservices12@gmail.com' },
+    update: {},
+    create: {
+      email: 'vrtservices12@gmail.com',
+      password: admin3PasswordHash,
+      role: 'ADMIN',
+      requiresPasswordChange: false,
+    },
+  });
+
+  console.log("Admin users created/verified:", admin1.email, admin2.email, admin3.email);
 }
 
 main()
