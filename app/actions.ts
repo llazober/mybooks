@@ -2048,7 +2048,7 @@ export async function reseedSample(): Promise<WriteResult & { id?: string }> {
 }
 
 export async function loginUser(formData: FormData) {
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string || "").trim().toLowerCase();
   const password = formData.get("password") as string;
   if (!email || !password) return { error: "Email and password are required" };
 
