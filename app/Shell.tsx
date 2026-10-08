@@ -662,12 +662,11 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
       {showFeedback && (
         <div className="modal-overlay" onClick={() => setShowFeedback(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginTop: 0 }}>About PlainGL.com</h2>
+            <h2 style={{ marginTop: 0 }}>About mybooks</h2>
             <div className="feedback-body">
               <p>
-                <strong>“PlainGL”</strong> is a trademark owned by Hector Garcia, CPA.
-                This project is currently an open source project — you can download
-                all the code for free at{" "}
+                This is a private instance of <strong>mybooks</strong>.
+                It is based on the open source PlainGL project, which you can find at{" "}
                 <a
                   href="https://github.com/hexgarcia/plaingl"
                   target="_blank"

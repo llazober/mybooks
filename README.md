@@ -7,9 +7,8 @@ reports (P&L, P&L Detail, Balance Sheet) that you fully own.
 
 ## What this is
 
-This is the source for the live sample you see at
-[plaingl.com](https://plaingl.com). That hosted site is a **demo only** — it's
-here to show you what the app does.
+This is the source code for mybooks. It's a powerful and simple accounting tool 
+designed to help you manage your general ledger easily.
 
 The real point is for you to **download this, make it your own, and run it
 yourself.** Fork it, rename it, change the accounts, restyle it — it's yours.
