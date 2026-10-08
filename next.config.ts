@@ -15,9 +15,27 @@ function getCommitSha(): string {
   }
 }
 
+const securityHeaders = [
+  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-XSS-Protection', value: '1; mode=block' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Content-Security-Policy', value: "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https:;" },
+  { key: 'Permissions-Policy', value: 'geolocation=(), camera=(), microphone=()' }
+];
+
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_COMMIT_SHA: getCommitSha(),
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+    ];
   },
 };
 
