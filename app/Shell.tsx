@@ -58,6 +58,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
   const [nName, setNName] = useState("");
   const [nOwner, setNOwner] = useState("");
   const [nPass, setNPass] = useState("");
+  const [nCustomerId, setNCustomerId] = useState("");
   const [nErr, setNErr] = useState("");
   // Data source: "" = start from scratch, else duplicate from that entity id.
   const [nSource, setNSource] = useState("coa:vrt-custom");
@@ -210,6 +211,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
   function openNewModal() {
     setNName("");
     setNPass("");
+    setNCustomerId("");
     setNErr("");
     setNSource("coa:vrt-custom");
     setNSrcPass("");
@@ -224,7 +226,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
       return;
     }
     if ((nOwner.trim() && !nPass) || (!nOwner.trim() && nPass)) {
-      setNErr("To protect this entity, provide both an owner name and a password.");
+      setNErr("To create a user account, provide both an email address and a password.");
       return;
     }
     const owner = nOwner.trim();
@@ -236,7 +238,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
         // Fresh entity seeded with a starter chart of accounts.
         const template = nSource.slice(COA_PREFIX.length);
         created = {
-          ...(await addEntity(name, owner || undefined, nPass || undefined, template)),
+          ...(await addEntity(name, owner || undefined, nPass || undefined, template, nCustomerId.trim() || undefined)),
           owner,
         };
       } else if (nSource) {
@@ -247,6 +249,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
           password: nPass || undefined,
           sourceOwner: localStorage.getItem("beanbooks.owner") || "",
           sourcePassword: nSrcPass || undefined,
+          customerId: nCustomerId.trim() || undefined,
         });
         if (!res.ok || !res.id) {
           setNErr(res.error || "Could not duplicate.");
@@ -256,7 +259,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
         created = { id: res.id, name: res.name || name, owner };
         void src;
       } else {
-        created = { ...(await addEntity(name, owner || undefined, nPass || undefined)), owner };
+        created = { ...(await addEntity(name, owner || undefined, nPass || undefined, undefined, nCustomerId.trim() || undefined)), owner };
       }
       if (owner) localStorage.setItem("beanbooks.owner", owner);
       setEntities((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
@@ -541,18 +544,26 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
                 />
               </label>
               <label>
-                File owner (name)
+                Customer ID
                 <input
-                  placeholder="e.g. Hector Garcia"
+                  placeholder="e.g. CUST-12345"
+                  value={nCustomerId}
+                  onChange={(e) => setNCustomerId(e.target.value)}
+                />
+              </label>
+              <label>
+                User Email Address
+                <input
+                  placeholder="e.g. client@example.com"
                   value={nOwner}
                   onChange={(e) => setNOwner(e.target.value)}
                 />
               </label>
               <label>
-                Password
+                Initial Password
                 <input
                   type="password"
-                  placeholder="Used to open this entity later"
+                  placeholder="Password for the client to log in"
                   value={nPass}
                   onChange={(e) => setNPass(e.target.value)}
                 />
@@ -595,8 +606,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
               ) : null}
             </div>
             <p className="muted" style={{ fontSize: 12 }}>
-              Leave owner &amp; password blank for an unprotected entity. Note: this
-              is a convenience lock — the underlying file is not encrypted.
+              Leave the email and password blank if you do not want to create a client login for this company right now.
             </p>
             <div className="modal-actions">
               <button onClick={() => setShowNew(false)} disabled={busy}>

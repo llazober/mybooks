@@ -98,7 +98,8 @@ export async function addEntity(
   name: string,
   owner?: string,
   password?: string,
-  coaTemplate?: string
+  coaTemplate?: string,
+  customerId?: string
 ): Promise<EntitySummary> {
   const id = slugify(name);
   let text =
@@ -110,17 +111,28 @@ export async function addEntity(
   text += "\n";
   const opens = coaTemplate ? templateOpenDirectives(coaTemplate) : "";
   if (opens) text += opens + "\n";
-  await saveEntity(id, text);
+  // Upsert the entity directly in the database
+  await prisma.entity.upsert({
+    where: { id },
+    create: { id, name, customerId: customerId || null, beancount: text, owner: owner || null },
+    update: { beancount: text, customerId: customerId || null, owner: owner || null }
+  });
 
-  // If owner email and password are provided, create the User record
+  // If user email and password are provided, create or update the User record
   if (owner && password) {
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
-      data: {
+    await prisma.user.upsert({
+      where: { email: owner },
+      create: {
         email: owner,
         password: hashedPassword,
         role: "COMPANY",
         requiresPasswordChange: true,
+        entityId: id,
+      },
+      update: {
+        password: hashedPassword,
+        role: "COMPANY",
         entityId: id,
       }
     });
@@ -226,6 +238,7 @@ export async function duplicateEntity(
     password?: string;
     sourceOwner?: string;
     sourcePassword?: string;
+    customerId?: string;
   } = {}
 ): Promise<WriteResult & { id?: string; name?: string }> {
   const srcText = await getLedgerText(sourceId);
@@ -253,17 +266,38 @@ export async function duplicateEntity(
     title: newName,
     operating_currency: ledger.options.operating_currency || "USD",
   };
-  if (opts.owner && opts.password) {
-    ledger.options.bb_owner = opts.owner.trim();
-    ledger.options.bb_pwhash = pwHash(opts.owner.trim(), opts.password);
-  }
+  // We no longer set bb_owner or bb_pwhash on the file itself.
+  // Instead, we will create the Entity and User in the database.
 
   const next = serialize(ledger);
   const { errors } = parse(next);
   if (errors.length)
     return { ok: false, error: "Validation failed: " + errors[0].message };
 
-  await saveLedgerText(id, next);
+  await prisma.entity.upsert({
+    where: { id },
+    create: { id, name: newName, customerId: opts.customerId || null, beancount: next, owner: opts.owner || null },
+    update: { beancount: next, customerId: opts.customerId || null, owner: opts.owner || null }
+  });
+
+  if (opts.owner && opts.password) {
+    const hashedPassword = await bcrypt.hash(opts.password, 10);
+    await prisma.user.upsert({
+      where: { email: opts.owner },
+      create: {
+        email: opts.owner,
+        password: hashedPassword,
+        role: "COMPANY",
+        requiresPasswordChange: true,
+        entityId: id,
+      },
+      update: {
+        password: hashedPassword,
+        role: "COMPANY",
+        entityId: id,
+      }
+    });
+  }
   return { ok: true, id, name: newName };
 }
 

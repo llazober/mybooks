@@ -28,9 +28,10 @@ model User {
 
 model Entity {
   id        String   @id
-  name      String
-  beancount String   @db.Text
-  owner     String?
+  name       String
+  customerId String?  @db.VarChar(30)
+  beancount  String   @db.Text
+  owner      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users     User[]
