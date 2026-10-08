@@ -77,7 +77,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
   // Cross-tab focus: open a specific txn in the register (set from Statements).
   const [registerFocus, setRegisterFocus] = useState<{ account: string; txId: string } | null>(null);
   // Theme: purely a visual skin. "default" | "pretty" | "dark" | "america250". No data change.
-  const [theme, setTheme] = useState<"default" | "pretty" | "dark" | "america250" | "modern">("default");
+  const [theme, setTheme] = useState<"default" | "pretty" | "dark" | "america250" | "modern">("pretty");
   const [collapsed, setCollapsed] = useState(false);
   // Admin mode (UI gate; deterrent only — see deleteEntity note).
   const [admin, setAdmin] = useState(false);
