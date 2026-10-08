@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/store/pg";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { Resend } from "resend";
 // Server actions for the React app. These are the seam between the React UI
 // and the server-side ledger store + Beancount engine. The client never
 // parses Beancount or touches the filesystem; it calls these.
@@ -2228,5 +2229,33 @@ export async function uploadDocument(formData: FormData): Promise<{ ok: boolean;
   } catch (error: any) {
     console.error("Upload failed:", error);
     return { ok: false, error: error.message || "Upload failed due to server error." };
+  }
+}
+
+export async function sendSupportEmail(subject: string, message: string, entityName: string, customerId?: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY!);
+    
+    // Using the same from/reply-to as the CRM
+    await resend.emails.send({
+      from: "notification@datalazo.net",
+      to: "notification@vrtservices12.com",
+      replyTo: "crm@ostooechei.resend.app",
+      subject: `[Portal Support] ${subject}`,
+      html: `
+        <h2>New Support Request from Client Portal</h2>
+        <p><strong>Customer:</strong> ${entityName}</p>
+        <p><strong>Customer ID:</strong> ${customerId || "N/A"}</p>
+        <hr />
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${message}</p>
+      `,
+    });
+
+    return { ok: true };
+  } catch (error: any) {
+    console.error("Send email failed:", error);
+    return { ok: false, error: error.message || "Email sending failed." };
   }
 }

@@ -1,22 +1,29 @@
 "use client";
 
 import React, { useState } from "react";
+import { sendSupportEmail } from "./actions";
 
 export default function SupportView({ entityName, customerId }: { entityName: string; customerId?: string }) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSending(true);
+    setStatus("");
     
-    // Instead of an API call for now, we can pop open the user's default email client
-    // pre-filled with their Customer ID to ensure VRT Services knows who is asking!
-    const body = `Customer: ${entityName} ${customerId ? `(${customerId})` : ""}\n\n${message}`;
-    const mailto = `mailto:notification@vrtservices12.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const res = await sendSupportEmail(subject, message, entityName, customerId);
     
-    window.location.href = mailto;
-    setStatus("✅ Email client opened! If nothing happened, you can email us directly at notification@vrtservices12.com");
+    if (res.ok) {
+      setStatus("✅ Message sent! Our support team will get back to you shortly.");
+      setSubject("");
+      setMessage("");
+    } else {
+      setStatus(`❌ Error: ${res.error}`);
+    }
+    setSending(false);
   };
 
   return (
@@ -99,22 +106,23 @@ export default function SupportView({ entityName, customerId }: { entityName: st
           <div style={{ textAlign: "right", marginTop: "8px" }}>
             <button 
               type="submit"
+              disabled={sending}
               style={{
-                background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                background: sending ? "linear-gradient(135deg, #64748b, #475569)" : "linear-gradient(135deg, #3b82f6, #2563eb)",
                 border: "none",
                 color: "#fff",
                 fontSize: "0.95rem",
                 fontWeight: "600",
                 padding: "12px 28px",
                 borderRadius: "8px",
-                cursor: "pointer",
-                boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
+                cursor: sending ? "not-allowed" : "pointer",
+                boxShadow: sending ? "none" : "0 4px 15px rgba(59, 130, 246, 0.3)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px"
               }}
             >
-              ✉️ Send Message
+              {sending ? "⏳ Sending..." : "✉️ Send Message"}
             </button>
           </div>
         </form>
