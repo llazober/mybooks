@@ -108,7 +108,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
     const account = params.get("account") || "";
     setUnlocked((s) => new Set(s).add(entity)); // arriving via deep link implies access
     setActiveId(entity);
-    if (tabParam && (TABS as readonly string[]).includes(tabParam)) setTab(tabParam as Tab);
+    if (tabParam && (ADMIN_TABS as readonly string[]).includes(tabParam)) setTab(tabParam as Tab);
     if (tx || account) setRegisterFocus({ account, txId: tx });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
