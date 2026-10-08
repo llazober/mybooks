@@ -4,6 +4,7 @@ import { Buffer } from "node:buffer";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/store/pg";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 // Server actions for the React app. These are the seam between the React UI
 // and the server-side ledger store + Beancount engine. The client never
 // parses Beancount or touches the filesystem; it calls these.
@@ -2187,4 +2188,47 @@ export async function adminResetCompanyPassword(entityId: string) {
   });
 
   return { ok: true, email: user.email };
+}
+
+// ---- File Upload -----------------------------------------------------------
+
+export async function uploadDocument(formData: FormData): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const file = formData.get("file") as File;
+    const entityId = formData.get("entityId") as string;
+    const customerId = formData.get("customerId") as string;
+
+    if (!file || !entityId) {
+      return { ok: false, error: "Missing file or entity context." };
+    }
+
+    const s3 = new S3Client({
+      endpoint: process.env.DO_SPACES_ENDPOINT!,
+      region: process.env.DO_SPACES_REGION!,
+      credentials: {
+        accessKeyId: process.env.DO_SPACES_KEY!,
+        secretAccessKey: process.env.DO_SPACES_SECRET!,
+      },
+    });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    
+    // Construct the prefix (customer ID or entity ID)
+    const prefix = customerId ? customerId : entityId;
+    // Keep original filename but prepend timestamp to prevent overwrites
+    const key = `${prefix}/inbox/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+
+    await s3.send(new PutObjectCommand({
+      Bucket: process.env.DO_SPACES_BUCKET!,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type || "application/octet-stream",
+      ACL: "private", // DO spaces supports ACLs
+    }));
+
+    return { ok: true };
+  } catch (error: any) {
+    console.error("Upload failed:", error);
+    return { ok: false, error: error.message || "Upload failed due to server error." };
+  }
 }

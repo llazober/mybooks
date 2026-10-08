@@ -22,13 +22,14 @@ import JournalEntryView from "./JournalEntryView";
 import ChartView from "./ChartView";
 import ImportView from "./ImportView";
 import ExportView from "./ExportView";
+import UploadView from "./UploadView";
 import { COA_TEMPLATE_LIST } from "@/lib/coa-templates";
 
 // "Start from" dropdown values that seed a starter chart of accounts.
 const COA_PREFIX = "coa:";
 
-const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export"] as const;
-const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger"] as const;
+const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export", "Upload"] as const;
+const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger", "Upload"] as const;
 type Tab = (typeof ADMIN_TABS)[number];
 
 const SAMPLE_ID = "sample-company";
@@ -509,6 +510,8 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
           <ImportView key={active.id} entityId={active.id} onChange={() => setDataVersion((v) => v + 1)} />
         ) : tab === "Export" && session?.role === "ADMIN" ? (
           <ExportView key={active.id + ":" + dataVersion} entityId={active.id} />
+        ) : tab === "Upload" ? (
+          <UploadView key={active.id} entityId={active.id} customerId={active.customerId} />
         ) : null}
       </main>
 
