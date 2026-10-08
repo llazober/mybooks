@@ -44,3 +44,6 @@ next-env.d.ts
 
 # generated sample reference copy (the .ts module is the committed source)
 /lib/store/sample.beancount
+
+# Ignore CSV files containing potentially sensitive data
+*.csv
