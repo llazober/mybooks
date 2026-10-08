@@ -1,4 +1,4 @@
-# PlainGL
+# mybooks
 
 A plain-text general ledger accounting workspace with professional financial
 reports (P&L, P&L Detail, Balance Sheet) that you fully own.
