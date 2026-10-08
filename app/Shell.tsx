@@ -161,8 +161,14 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
         <button
           className={"entity" + (e.id === activeId ? " active" : "")}
           onClick={() => selectEntity(e)}
+          style={{ textAlign: "left" }}
         >
-          {e.name}
+          <div style={{ fontWeight: 500 }}>{e.name}</div>
+          {e.customerId && (
+            <div style={{ fontSize: "11px", opacity: 0.7, marginTop: "2px", fontWeight: "normal" }}>
+              {e.customerId}
+            </div>
+          )}
         </button>
         <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
           {session?.role === "ADMIN" && e.id !== SAMPLE_ID ? (

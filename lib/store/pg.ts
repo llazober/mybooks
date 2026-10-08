@@ -19,6 +19,7 @@ export const pgStore: LedgerStore = {
         id: true,
         name: true,
         owner: true,
+        customerId: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -29,6 +30,7 @@ export const pgStore: LedgerStore = {
       id: e.id,
       name: e.name,
       owner: e.owner || "",
+      customerId: e.customerId || undefined,
     }));
   },
 

@@ -71,6 +71,7 @@ export interface EntitySummary {
   id: string;
   name: string;
   owner?: string; // file owner (from bb_owner); used for search. "" if unprotected
+  customerId?: string;
 }
 
 export async function listEntities(): Promise<EntitySummary[]> {

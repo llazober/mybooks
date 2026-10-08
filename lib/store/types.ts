@@ -9,7 +9,7 @@ export interface StoredEntity {
 }
 
 export interface LedgerStore {
-  listEntities(): Promise<{ id: string; name: string; owner: string }[]>;
+  listEntities(): Promise<{ id: string; name: string; owner: string; customerId?: string }[]>;
   loadEntity(id: string): Promise<StoredEntity | null>;
   saveEntity(id: string, beancount: string): Promise<void>;
   createEntity(id: string, name: string): Promise<StoredEntity>;
