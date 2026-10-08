@@ -522,16 +522,6 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
           <ImportView key={active.id} entityId={active.id} onChange={() => setDataVersion((v) => v + 1)} />
         ) : tab === "Export" && session?.role === "ADMIN" ? (
           <ExportView key={active.id + ":" + dataVersion} entityId={active.id} />
-        ) : tab === "Analysis" ? (
-          <div className="pad">
-            <h2 style={{ marginTop: 0 }}>Analysis</h2>
-            <p>Analysis functionality coming soon...</p>
-          </div>
-        ) : tab === "Plan" ? (
-          <div className="pad">
-            <h2 style={{ marginTop: 0 }}>Plan</h2>
-            <p>Plan functionality coming soon...</p>
-          </div>
         ) : null}
       </main>
 
