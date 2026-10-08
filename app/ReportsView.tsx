@@ -183,12 +183,7 @@ export default function ReportsView({ entityId }: { entityId: string }) {
           </label>
         </div>
 
-        {data?.errors?.length ? (
-          <div className="notice">
-            {data.errors.length} ledger issue(s): {data.errors[0].message}
-            {data.errors.length > 1 ? " (+ more)" : ""}
-          </div>
-        ) : null}
+
 
         <div className="metric-row">
           <div className="metric">

@@ -101,12 +101,7 @@ export default function DashboardView({ entityId }: { entityId: string }) {
           </button>
         </div>
 
-        {data?.errors?.length ? (
-          <div className="notice" style={{ marginTop: 12 }}>
-            {data.errors.length} ledger issue(s): {data.errors[0].message}
-            {data.errors.length > 1 ? " (+ more)" : ""}
-          </div>
-        ) : null}
+
 
         <div className="metric-row" style={{ marginTop: 14 }}>
           <div className="metric">
