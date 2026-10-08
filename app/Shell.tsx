@@ -23,13 +23,14 @@ import ChartView from "./ChartView";
 import ImportView from "./ImportView";
 import ExportView from "./ExportView";
 import UploadView from "./UploadView";
+import SupportView from "./SupportView";
 import { COA_TEMPLATE_LIST } from "@/lib/coa-templates";
 
 // "Start from" dropdown values that seed a starter chart of accounts.
 const COA_PREFIX = "coa:";
 
-const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export", "Upload"] as const;
-const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger", "Upload"] as const;
+const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export", "Upload", "Support"] as const;
+const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger", "Upload", "Support"] as const;
 type Tab = (typeof ADMIN_TABS)[number];
 
 const SAMPLE_ID = "sample-company";
@@ -512,6 +513,8 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
           <ExportView key={active.id + ":" + dataVersion} entityId={active.id} />
         ) : tab === "Upload" ? (
           <UploadView key={active.id} entityId={active.id} customerId={active.customerId} entityName={active.name} />
+        ) : tab === "Support" ? (
+          <SupportView key={active.id} entityName={active.name} customerId={active.customerId} />
         ) : null}
       </main>
 
