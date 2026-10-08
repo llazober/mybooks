@@ -51,7 +51,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
       initialEntities[0]?.id ??
       "",
   );
-  const [tab, setTab] = useState<Tab>("Reports");
+  const [tab, setTab] = useState<Tab>("Summary");
   const [busy, setBusy] = useState(false);
   // Entity-creation modal
   const [showNew, setShowNew] = useState(false);
