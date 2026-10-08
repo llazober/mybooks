@@ -27,8 +27,8 @@ import { COA_TEMPLATE_LIST } from "@/lib/coa-templates";
 // "Start from" dropdown values that seed a starter chart of accounts.
 const COA_PREFIX = "coa:";
 
-const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export", "Analysis", "Plan"] as const;
-const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger", "Analysis", "Plan"] as const;
+const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export"] as const;
+const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger"] as const;
 type Tab = (typeof ADMIN_TABS)[number];
 
 const SAMPLE_ID = "sample-company";
