@@ -25,6 +25,8 @@ import ExportView from "./ExportView";
 import UploadView from "./UploadView";
 import SupportView from "./SupportView";
 import { COA_TEMPLATE_LIST } from "@/lib/coa-templates";
+import IdleTimeout from "./IdleTimeout";
+
 
 // "Start from" dropdown values that seed a starter chart of accounts.
 const COA_PREFIX = "coa:";
@@ -693,6 +695,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
           </div>
         </div>
       )}
+      <IdleTimeout />
     </div>
   );
 }
