@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/hectorgarciacpa/**)",
+      "Read(//Users/hectorgarciacpa/.local/share/claude/versions/**)",
+      "Read(//Users/hectorgarciacpa/.npm-global/**)",
+      "Bash(npx --yes tsx scripts/_verify-cogs.mts)",
+      "Bash(npx --yes tsx --test lib/**/*.test.ts)",
+      "Bash(git check-ignore *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit=$?\")",
+      "Read(//tmp/**)",
+      "Bash(npm test *)",
+      "Bash(echo \"=== tsc exit $? ===\")",
+      "Bash(npx eslint *)",
+      "Bash(echo \"tsc=$?\")",
+      "Bash(echo \"=== BankFeedView lint exit $? ===\")",
+      "Bash(sed -n '/export async function verifyAdmin/,/^}/p' app/actions.ts)",
+      "Bash(sed -n '/export async function reseedSample/,/^}/p' app/actions.ts)"
+    ]
+  }
+}
