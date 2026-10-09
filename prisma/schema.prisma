@@ -35,4 +35,14 @@ model Entity {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users     User[]
+  importDraft ImportDraft?
+}
+
+model ImportDraft {
+  id        String   @id @default(uuid())
+  entityId  String   @unique
+  entity    Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  data      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

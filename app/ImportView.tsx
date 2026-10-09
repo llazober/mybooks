@@ -65,12 +65,14 @@ GJ\t7/7/2026\t656\t\t700\tCheck\t1626`;
 export default function ImportView({
   entityId,
   onChange,
+  initialText = "",
 }: {
   entityId: string;
   onChange?: () => void;
+  initialText?: string;
 }) {
   const [accounts, setAccounts] = useState<string[]>([]);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText);
   const [lines, setLines] = useState<ParsedLine[]>([]);
   const [previewed, setPreviewed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -204,6 +206,7 @@ export default function ImportView({
       }
     }
 
+    finalLines.sort((a, b) => a.date.localeCompare(b.date));
     setLines(finalLines);
     setPreviewed(true);
     if (finalLines.length === 0) setError("No valid rows found.");
@@ -397,8 +400,7 @@ export default function ImportView({
                     <td><input value={l.description} onChange={(e) => setLine(l.key, { description: e.target.value })} style={{width: "100%"}} /></td>
                     <td>
                       <div style={{ position: "relative" }}>
-                        <input
-                          list="je-accounts"
+                        <select
                           value={l.account}
                           onChange={(e) => setLine(l.key, { account: e.target.value })}
                           style={{
@@ -407,7 +409,13 @@ export default function ImportView({
                             backgroundColor: !accounts.includes(l.account) ? "#f9dedc" : undefined
                           }}
                           title={!accounts.includes(l.account) ? "Account does not exist in Chart of Accounts" : (l.isAuto ? "Auto-injected balancing account" : "")}
-                        />
+                        >
+                          {!accounts.includes(l.account) && (
+                            <option value={l.account}>{l.account} (Invalid)</option>
+                          )}
+                          <option value="">-- Select Account --</option>
+                          {accounts.map(a => <option key={a} value={a}>{a}</option>)}
+                        </select>
                       </div>
                     </td>
                     <td className="amount"><input type="number" step="0.01" value={l.debit} onChange={(e) => setLine(l.key, { debit: e.target.value })} style={{width: 80, textAlign: "right"}} /></td>
@@ -442,11 +450,7 @@ export default function ImportView({
               </tfoot>
             </table>
 
-            <datalist id="je-accounts">
-              {accounts.map((a) => (
-                <option key={a} value={a} />
-              ))}
-            </datalist>
+
 
             <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
               <button

@@ -2313,3 +2313,63 @@ export async function forgotPassword(email: string): Promise<{ ok: boolean; erro
     return { ok: false, error: "An unexpected error occurred while resetting the password." };
   }
 }
+
+export async function saveImportDraft(entityId: string, data: any[]) {
+  await prisma.importDraft.upsert({
+    where: { entityId },
+    update: { data: JSON.stringify(data) },
+    create: { entityId, data: JSON.stringify(data) },
+  });
+  return { ok: true };
+}
+
+export async function loadImportDraft(entityId: string) {
+  const draft = await prisma.importDraft.findUnique({
+    where: { entityId },
+  });
+  if (!draft) return null;
+  try {
+    return JSON.parse(draft.data);
+  } catch {
+    return null;
+  }
+}
+
+export async function clearImportDraft(entityId: string) {
+  try {
+    await prisma.importDraft.delete({
+      where: { entityId },
+    });
+  } catch (e) {
+    // Ignore if not found
+  }
+  return { ok: true };
+}
+
+import fs from 'fs';
+import path from 'path';
+
+export async function getGlobalChartOfAccounts() {
+  try {
+    const csvPath = path.join(process.cwd(), 'Chart of accounts.csv');
+    const content = fs.readFileSync(csvPath, 'utf8');
+    const rows = content.trim().split(/\r?\n/).slice(1);
+    return rows.map(line => {
+      // Very basic CSV splitting (assumes no commas in fields for now, but we'll use a better split if needed)
+      // Actually, standard split is fine for this specific file based on viewing it
+      let cells = [];
+      let cur = "";
+      let quoted = false;
+      for (const ch of line) {
+        if (ch === '"') quoted = !quoted;
+        else if (ch === "," && !quoted) { cells.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      cells.push(cur);
+      return { num: cells[0]?.trim(), name: cells[1]?.trim(), type: cells[2]?.trim() };
+    });
+  } catch (e) {
+    console.error("Failed to read global chart of accounts:", e);
+    return [];
+  }
+}

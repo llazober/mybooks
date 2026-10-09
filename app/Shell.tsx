@@ -21,6 +21,7 @@ import DataEntryView from "./DataEntryView";
 import JournalEntryView from "./JournalEntryView";
 import ChartView from "./ChartView";
 import ImportView from "./ImportView";
+import UploadRawDataView from "./UploadRawDataView";
 import ExportView from "./ExportView";
 import UploadView from "./UploadView";
 import SupportView from "./SupportView";
@@ -31,7 +32,7 @@ import IdleTimeout from "./IdleTimeout";
 // "Start from" dropdown values that seed a starter chart of accounts.
 const COA_PREFIX = "coa:";
 
-const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Export", "Upload", "Support"] as const;
+const ADMIN_TABS = ["Dash", "Summary", "Reports", "Ledger", "Journal", "Chart", "Journal Import", "Upload Raw Data", "Export", "Upload", "Support"] as const;
 const COMPANY_TABS = ["Dash", "Summary", "Reports", "Ledger", "Upload", "Support"] as const;
 type Tab = (typeof ADMIN_TABS)[number];
 
@@ -86,6 +87,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
   const [collapsed, setCollapsed] = useState(false);
   const [reseeding, setReseeding] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [prefilledImportData, setPrefilledImportData] = useState("");
 
   useEffect(() => {
     const t = localStorage.getItem("beanbooks.theme");
@@ -510,7 +512,12 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
             }}
           />
         ) : tab === "Journal Import" && session?.role === "ADMIN" ? (
-          <ImportView key={active.id} entityId={active.id} onChange={() => setDataVersion((v) => v + 1)} />
+          <ImportView key={active.id} entityId={active.id} onChange={() => setDataVersion((v) => v + 1)} initialText={prefilledImportData} />
+        ) : tab === "Upload Raw Data" && session?.role === "ADMIN" ? (
+          <UploadRawDataView key={active.id} entityId={active.id} onChange={() => setDataVersion((v) => v + 1)} onNavigateToImport={(data) => {
+            setPrefilledImportData(data);
+            setTab("Journal Import");
+          }} />
         ) : tab === "Export" && session?.role === "ADMIN" ? (
           <ExportView key={active.id + ":" + dataVersion} entityId={active.id} />
         ) : tab === "Upload" ? (
