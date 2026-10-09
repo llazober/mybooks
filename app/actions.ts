@@ -1026,14 +1026,14 @@ export async function buildExport(
 
 // ---- Machine Learning Mappings -------------------------------------------------
 
-export function normalizeDescription(desc: string): string {
+function normalizeDescription(desc: string): string {
   if (!desc) return "";
   // Strip numbers, dates, and special characters to find the core string
   return desc.toLowerCase().replace(/[0-9\/\-\\]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export async function predictMappings(entityId: string) {
-  const rules = await p.mappingRule.findMany({ where: { entityId } });
+  const rules = await prisma.mappingRule.findMany({ where: { entityId } });
   const dict: Record<string, { accountNumber: string | null; entityCode: string | null; reference: string | null }> = {};
   for (const r of rules) {
     dict[r.descriptionKey] = { accountNumber: r.accountNumber, entityCode: r.entityCode, reference: r.reference };
@@ -1061,7 +1061,7 @@ export async function learnMappings(entityId: string, headers: string[], rows: s
 
     if (!acc && !ent && !ref) continue;
 
-    await p.mappingRule.upsert({
+    await prisma.mappingRule.upsert({
       where: { entityId_descriptionKey: { entityId, descriptionKey: norm } },
       update: {
         accountNumber: acc || null,

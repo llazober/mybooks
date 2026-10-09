@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getGlobalChartOfAccounts, saveImportDraft, loadImportDraft, clearImportDraft, predictMappings, learnMappings, normalizeDescription } from "./actions";
+import { getGlobalChartOfAccounts, saveImportDraft, loadImportDraft, clearImportDraft, predictMappings, learnMappings } from "./actions";
 
 function csvLine(line: string): string[] {
   const cells: string[] = [];
@@ -16,6 +16,11 @@ function csvLine(line: string): string[] {
   }
   cells.push(cur);
   return cells.map((c) => c.trim());
+}
+
+function normalizeDescription(desc: string): string {
+  if (!desc) return "";
+  return desc.toLowerCase().replace(/[0-9\/\-\\]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export default function UploadRawDataView({
