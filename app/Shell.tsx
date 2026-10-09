@@ -82,16 +82,20 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
   const [refreshing, setRefreshing] = useState(false);
   // Cross-tab focus: open a specific txn in the register (set from Statements).
   const [registerFocus, setRegisterFocus] = useState<{ account: string; txId: string } | null>(null);
-  // Theme: purely a visual skin. "default" | "pretty" | "dark" | "america250". No data change.
-  const [theme, setTheme] = useState<"default" | "pretty" | "dark" | "america250" | "modern">("pretty");
+  // Theme: purely a visual skin. "default" | "pretty" | "dark" | "america250" | "modern". No data change.
+  const [theme, setTheme] = useState<"default" | "pretty" | "dark" | "america250" | "modern">(() => {
+    if (typeof window !== "undefined") {
+      const t = localStorage.getItem("beanbooks.theme");
+      if (t === "pretty" || t === "dark" || t === "default" || t === "america250" || t === "modern") return t as any;
+    }
+    return "pretty";
+  });
   const [collapsed, setCollapsed] = useState(false);
   const [reseeding, setReseeding] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [prefilledImportData, setPrefilledImportData] = useState("");
 
   useEffect(() => {
-    const t = localStorage.getItem("beanbooks.theme");
-    if (t === "pretty" || t === "dark" || t === "default" || t === "america250" || t === "modern") setTheme(t);
     setCollapsed(localStorage.getItem("beanbooks.navCollapsed") === "1");
     // Remembered owner name prefills both modals.
     const savedOwner = localStorage.getItem("beanbooks.owner") || "";
@@ -407,7 +411,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
 
             <div className="entity-list">
               {sampleEntity ? renderEntityRow(sampleEntity) : null}
-              {otherEntities.length ? (
+              {session?.role === "ADMIN" && otherEntities.length ? (
                 <input
                   className="entity-search"
                   placeholder="Search companies or owners…"
@@ -451,7 +455,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
       <main>
         <div className="toolbar">
           <div className="entity-title">
-            <strong>{active?.name ?? "No entity"}</strong>
+            <strong style={{ fontSize: "1.5rem" }}>{active?.name ?? "No entity"}</strong>
             <button
               className={"refresh-btn" + (refreshing ? " spinning" : "")}
               onClick={refreshData}
