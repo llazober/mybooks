@@ -304,6 +304,7 @@ export default function UploadRawDataView({
                       {headers.map((header, cIdx) => {
                         const hl = header.toLowerCase();
                         const isAccount = hl === "account" || hl === "entity cod account";
+                        const isReadOnly = hl === "debit" || hl === "credit";
                         const val = row[cIdx] ?? "";
 
                         if (isAccount) {
@@ -321,10 +322,18 @@ export default function UploadRawDataView({
                             <td key={cIdx} style={{ padding: "4px 8px" }}>
                               <input 
                                 value={val} 
-                                onChange={(e) => updateCell(rIdx, cIdx, e.target.value)}
-                                style={{ width: "100%", minWidth: 80, border: "1px solid transparent", background: "transparent" }}
-                                onFocus={(e) => e.target.style.border = "1px solid var(--accent)"}
-                                onBlur={(e) => e.target.style.border = "1px solid transparent"}
+                                readOnly={isReadOnly}
+                                onChange={isReadOnly ? undefined : (e) => updateCell(rIdx, cIdx, e.target.value)}
+                                style={{ 
+                                  width: "100%", 
+                                  minWidth: 80, 
+                                  border: "1px solid transparent", 
+                                  background: "transparent",
+                                  cursor: isReadOnly ? "default" : "text",
+                                  color: isReadOnly ? "var(--muted)" : "inherit"
+                                }}
+                                onFocus={isReadOnly ? undefined : (e) => e.target.style.border = "1px solid var(--accent)"}
+                                onBlur={isReadOnly ? undefined : (e) => e.target.style.border = "1px solid transparent"}
                               />
                             </td>
                           );
