@@ -1022,6 +1022,7 @@ export async function buildExport(
       return inR(d.date);
     }),
   };
+  return serialize(filtered);
 }
 
 // ---- Machine Learning Mappings -------------------------------------------------
