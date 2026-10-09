@@ -42,11 +42,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-900/60 via-neutral-950 to-neutral-950"></div>
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/40 via-transparent to-transparent opacity-50 blur-3xl"></div>
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
       
-      <div className="relative z-10 w-full max-w-md p-10 bg-neutral-900/70 backdrop-blur-2xl border border-white/5 rounded-[2rem] shadow-[0_0_50px_-12px_rgba(20,184,166,0.25)]">
+      <div className="relative z-10 w-full max-w-md p-10 bg-[#487FD5] border border-white/5 rounded-[2rem] shadow-[0_0_50px_-12px_rgba(20,184,166,0.25)]">
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-extralight text-white tracking-wider mb-2 bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">VRT Services</h1>
           <p className="text-neutral-400 text-sm font-medium tracking-wide uppercase">Sign in to your dashboard</p>
@@ -81,13 +79,12 @@ export default function LoginPage() {
             </button>
 
             <div className="text-center">
-              <button 
-                type="button" 
+              <span 
                 onClick={() => { setIsForgotMode(false); setForgotStatus(""); }}
-                className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+                className="text-teal-400 hover:text-teal-300 text-sm font-medium cursor-pointer"
               >
                 Back to Sign In
-              </button>
+              </span>
             </div>
           </form>
         ) : (
@@ -106,13 +103,12 @@ export default function LoginPage() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-neutral-300">Password</label>
-                <button 
-                  type="button"
+                <span 
                   onClick={() => setIsForgotMode(true)}
-                  className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+                  className="text-teal-400 hover:text-teal-300 text-sm font-medium cursor-pointer"
                 >
                   Forgot password?
-                </button>
+                </span>
               </div>
               <input 
                 type="password" 
