@@ -226,10 +226,9 @@ export default function ImportView({
     startTransition(async () => {
       // Group back into transactions for commit
       const grouped = new Map<string, ParsedLine[]>();
-      let synth = 0;
       for (const p of lines) {
         if (!p.account || (!p.debit && !p.credit)) continue;
-        const gkey = p.ref ? `${p.date}|${p.ref}` : `${p.date}|synth|${synth++}`;
+        const gkey = p.ref ? `${p.date}|${p.ref}` : `${p.date}|${p.description}`;
         if (!grouped.has(gkey)) grouped.set(gkey, []);
         grouped.get(gkey)!.push(p);
       }
