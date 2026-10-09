@@ -1576,7 +1576,12 @@ export async function commitJournalBatch(
       }
     }
     
-    if (postings.length > 0) {
+        if (postings.length > 0) {
+      const sum = postings.reduce((s, p) => s + p.amount, 0);
+      if (sum !== 0) {
+        return { ok: false, error: "Postings for " + t.date + " must balance to zero (off by " + fromCents(Math.abs(sum)) + ")" };
+      }
+
       ledger.directives.push({
         kind: "transaction",
         date: t.date,
