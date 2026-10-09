@@ -1,0 +1,79 @@
+﻿Account Number,Account Name,Type,SubType,Level
+100,Cash,Current Asset,,1
+100.01,Petty Cash,Current Asset,,0
+100.02,Checking Account,Current Asset,,0
+100.03,Savings Account,Current Asset,,0
+100.99,Total Cash Available,Current Asset,,1
+130,Accounts Receivable,Current Asset,,0
+160,Inventory,Current Asset,,0
+205,Land,Fixed Asset,,0
+210,Buildings,Fixed Asset,,0
+220,Furniture & Fixtures,Fixed Asset,,0
+221,Equipment,Fixed Asset,,0
+240,Autos & Trucks,Fixed Asset,,0
+245,Less Accumulated Depreciation,Fixed Asset,,0
+255,Goodwill,Other Asset,,0
+260,Deposits,Other Asset,,0
+265,Other Assets,Other Asset,,0
+320,Accounts Payable,Current Liability,,0
+330,Accrued Expenses,Current Liability,,0
+330.01,FICA - Employer's Part,Current Liability,,0
+330.02,Withheld FICA,Current Liability,,0
+330.03,Withheld Federal Tax,Current Liability,,0
+330.04,Withheld State Tax,Current Liability,,0
+330.05,State Unemployment Tax,Current Liability,,0
+330.06,Federal Unemployment Tax,Current Liability,,0
+330.2,Sales & Use Tax Payable,Current Liability,,0
+330.3,Back Taxes,Current Liability,,0
+340,Health Insurance WH,Current Liability,,0
+350,Notes Payable (Current Portion),Current Liability,,0
+330.07,Wages Payable,Current Liability,,0
+450,Notes Payable (LT Portion),Long Term Liability,,0
+571,Paid-in Capital,Capital,,0
+572,Capital Stock,Capital,,0
+590,Retained Earnings,Capital,Retained Earnings,0
+601,Retail Sales - Category 1,Income,,0
+602,Retail Sales - Category 2,Income,,0
+603,Retail Sales - Category 3,Income,,0
+621,Sales Tax Collected,Income,,0
+630,Commissions Earned,Income,,0
+640,Interest Income,Income,,0
+648,Returns & Allowances,Income,,0
+656,Purchases for Resale,Cost of Goods,,0
+680,Commissions Paid Out,Cost of Goods,,0
+696,Change in Inventory,Cost of Goods,,0
+710,Officers Salaries,Expense,,0
+711,Salaries & Wages,Expense,,0
+712,Contract Labor,Expense,,0
+723,Advertising,Expense,,0
+725,Auto Mileage Expense,Expense,,0
+730,Bank Charges,Expense,,0
+738,Depreciation Expense,Expense,,0
+744,Dues & Subscriptions,Expense,,0
+748,Entertainment & Meals,Expense,,0
+752,Freight,Expense,,0
+758,Insurance,Expense,,0
+762,Interest,Expense,,0
+763,Laundry & Cleaning,Expense,,0
+765,Legal & Accounting,Expense,,0
+766,Licenses,Expense,,0
+770,Miscellaneous,Expense,,0
+772,Over & Short,Expense,,0
+774,Postage,Expense,,0
+775,Promotion,Expense,,0
+776,Rents & Leases,Expense,,0
+778,Repairs & Maintenance,Expense,,0
+782,Supplies,Expense,,0
+786.12,Taxes - Payroll,Expense,,0
+786.13,Taxes - Property,Expense,,0
+786.14,Taxes - Sales,Expense,,0
+786.2,Taxes - Other,Expense,,0
+790,Telephone,Expense,,0
+792,Travel,Expense,,0
+795,Utilities,Expense,,0
+500,Cost of Goods Sold,Expense,Regular Expense,0
+1000,Cash,Current Asset,Bank Account/Cash,0
+550,Professional fees,Expense,Other Expense,0
+534,Office Supplies,Expense,Regular Expense,0
+411,Sander Transport,Expense,Depreciation Expense,0
+481,Transportation Service,Expense,Regular Expense,0
