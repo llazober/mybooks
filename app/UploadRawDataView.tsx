@@ -180,6 +180,9 @@ export default function UploadRawDataView({
             const newRow = [...row];
             const applyMatch = (idx: number, val: string | null) => {
               if (idx >= 0 && val && newRow[idx] !== val) {
+                if (idx === refIdx && newRow[idx] && /^\d+$/.test(newRow[idx].trim())) {
+                  return;
+                }
                 newAutofills[`${rIdx}-${idx}`] = newRow[idx] || "";
                 newRow[idx] = val;
               }
