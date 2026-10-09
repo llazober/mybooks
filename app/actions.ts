@@ -1058,7 +1058,11 @@ export async function learnMappings(entityId: string, headers: string[], rows: s
 
     const acc = accIdx >= 0 ? row[accIdx] : null;
     const ent = entIdx >= 0 ? row[entIdx] : null;
-    const ref = refIdx >= 0 ? row[refIdx] : null;
+    let ref = refIdx >= 0 ? row[refIdx] : null;
+
+    if (ref && /^\d+$/.test(ref.trim())) {
+      ref = null;
+    }
 
     if (!acc && !ent && !ref) continue;
 
