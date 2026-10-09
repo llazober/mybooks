@@ -1265,9 +1265,6 @@ export async function addJournalEntry(
 
   const currency = je.currency || "USD";
   const { ledger, errors: pre } = parse(text);
-  if (pre.length)
-    return { ok: false, error: "Existing ledger has issues; refusing to write: " + pre[0].message };
-
   for (const p of postingCents) ensureOpen(ledger, p.account, currency);
 
   const meta: Record<string, string> = {};
@@ -1285,7 +1282,9 @@ export async function addJournalEntry(
 
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
 
   await saveLedgerText(id, next);
   return { ok: true };
@@ -1385,9 +1384,6 @@ export async function addAccount(
     };
 
   const { ledger, errors: pre } = parse(text);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   if (ledger.directives.some((d) => d.kind === "open" && d.account === account))
     return { ok: false, error: "Account already exists" };
 
@@ -1413,7 +1409,9 @@ export async function addAccount(
 
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
 
   await saveLedgerText(id, next);
   return { ok: true };
@@ -1428,9 +1426,6 @@ export async function removeAccount(
   if (text == null) return { ok: false, error: "Entity not found" };
 
   const { ledger, errors: pre } = parse(text);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   const hasActivity = ledger.directives.some(
     (d) => d.kind === "transaction" && d.postings.some((p) => p.account === account)
   );
@@ -1464,9 +1459,6 @@ export async function importAccounts(
   if (text == null) return { ok: false, error: "Entity not found" };
 
   const { ledger, errors: pre } = parse(text);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   const currency = ledger.options.operating_currency || "USD";
   const existing = new Set(
     ledger.directives.filter((d) => d.kind === "open").map((d) => (d as OpenDirective).account)
@@ -1504,7 +1496,9 @@ export async function importAccounts(
 
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
 
   await saveLedgerText(id, next);
   return { ok: true, added, skipped, invalid };
@@ -1561,9 +1555,6 @@ export async function commitJournalBatch(
   if (ledgerText == null) return { ok: false, error: "Entity not found" };
 
   const { ledger, errors: pre } = parse(ledgerText);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   const currency = ledger.options.operating_currency || "USD";
 
   for (const t of txns) {
@@ -1616,9 +1607,6 @@ export async function commitImport(
   if (!rows.length) return { ok: false, error: "No valid rows to import" };
 
   const { ledger, errors: pre } = parse(ledgerText);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   const currency = ledger.options.operating_currency || "USD";
   for (const r of rows) {
     if (!accountType(r.account) || !accountType(r.offset))
@@ -1650,7 +1638,9 @@ export async function commitImport(
 
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
 
   await saveLedgerText(id, next);
   return { ok: true, added: rows.length };
@@ -1751,8 +1741,6 @@ export async function recordDeletedFeedRows(
   const text = await getLedgerText(id);
   if (text == null) return { ok: false, error: "Entity not found" };
   const { ledger, errors: pre } = parse(text);
-  if (pre.length) return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   const existing = decodeDeleted(ledger);
   const seen = new Set(existing.map((s) => feedSignature(s.d, s.a, s.desc)));
   for (const r of rows) {
@@ -1765,7 +1753,9 @@ export async function recordDeletedFeedRows(
   ledger.options.bb_deleted = encodeDeleted(existing);
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
   await saveLedgerText(id, next);
   return { ok: true };
 }
@@ -1795,11 +1785,12 @@ export async function saveBankRules(id: string, rules: BankRule[]): Promise<Writ
   const text = await getLedgerText(id);
   if (text == null) return { ok: false, error: "Entity not found" };
   const { ledger, errors: pre } = parse(text);
-  if (pre.length) return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
   ledger.options.bb_rules = Buffer.from(JSON.stringify(rules), "utf8").toString("base64");
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
   await saveLedgerText(id, next);
   return { ok: true };
 }
@@ -1830,9 +1821,6 @@ export async function commitBankFeed(
   if (ledgerText == null) return { ok: false, error: "Entity not found" };
 
   const { ledger, errors: pre } = parse(ledgerText);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
-
   const currency = ledger.options.operating_currency || "USD";
   ensureOpen(ledger, source, currency);
 
@@ -1889,7 +1877,9 @@ export async function commitBankFeed(
 
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
 
   await saveLedgerText(id, next);
   return { ok: true, added: rows.length };
@@ -2081,8 +2071,6 @@ export async function updateTransaction(
     return { ok: false, error: "Postings must balance to zero (off by " + fromCents(sum) + ")" };
 
   const { ledger, errors: pre } = parse(text);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
   ensureIds(ledger);
 
   const tx = findById(ledger, txId);
@@ -2104,7 +2092,9 @@ export async function updateTransaction(
 
   const next = serialize(ledger);
   const { errors: post } = parse(next);
-  if (post.length) return { ok: false, error: "Validation failed: " + post[0].message };
+  const preMsgs = new Set(pre.map((e) => e.message));
+  const newErrors = post.filter((e) => !preMsgs.has(e.message));
+  if (newErrors.length) return { ok: false, error: "Validation failed: " + newErrors[0].message };
 
   await saveLedgerText(id, next);
   return { ok: true };
@@ -2118,8 +2108,6 @@ export async function deleteTransaction(
   const text = await getLedgerText(id);
   if (text == null) return { ok: false, error: "Entity not found" };
   const { ledger, errors: pre } = parse(text);
-  if (pre.length)
-    return { ok: false, error: "Ledger has issues; refusing to write: " + pre[0].message };
   ensureIds(ledger);
   const before = ledger.directives.length;
   ledger.directives = ledger.directives.filter(
