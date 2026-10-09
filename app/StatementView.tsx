@@ -16,6 +16,12 @@ import {
   type Granularity,
 } from "./actions";
 
+function formatDate(iso: string) {
+  if (!iso) return "";
+  const parts = iso.split("-");
+  return parts.length === 3 ? `${parts[1]}/${parts[2]}/${parts[0]}` : iso;
+}
+
 function money(display: string, negative: boolean, withDollar: boolean): string {
   if (display === "") return "";
   const isPct = display.endsWith("%");
@@ -594,7 +600,7 @@ function DetailTable({
               onClick={clickable ? () => onOpenTxn!(r.account, r.num) : undefined}
               title={clickable ? "Open this transaction to edit" : undefined}
             >
-              <td className="dt-date">{r.date}</td>
+              <td className="dt-date">{formatDate(r.date)}</td>
               <td className="dt-num">{r.num.length > 14 ? r.num.slice(0, 14) + "…" : r.num}</td>
               <td className="dt-name">{r.name}</td>
               <td className="dt-desc">{r.description}</td>

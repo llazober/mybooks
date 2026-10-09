@@ -19,6 +19,12 @@ function barPct(value: string, peer: string): number {
   return max === 0 ? 0 : Math.round((v / max) * 100);
 }
 
+function formatDate(iso: string) {
+  if (!iso) return "";
+  const parts = iso.split("-");
+  return parts.length === 3 ? `${parts[1]}/${parts[2]}/${parts[0]}` : iso;
+}
+
 export default function DashboardView({ entityId }: { entityId: string }) {
   const [data, setData] = useState<DashboardDTO | null>(null);
   const [from, setFrom] = useState(() => {
@@ -245,7 +251,7 @@ export default function DashboardView({ entityId }: { entityId: string }) {
                 return (
                   <tr key={i}>
                     <td className="muted" style={{ whiteSpace: "nowrap" }}>
-                      {t.date}
+                      {formatDate(t.date)}
                     </td>
                     <td>{t.payee || t.narration || "—"}</td>
                     <td className="amount">{top ? money(top.display) : ""}</td>

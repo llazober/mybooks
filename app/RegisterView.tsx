@@ -19,6 +19,12 @@ function money(display: string): string {
   return (neg ? "-$" : "$") + withCommas + "." + dec;
 }
 
+function formatDate(iso: string) {
+  if (!iso) return "";
+  const parts = iso.split("-");
+  return parts.length === 3 ? `${parts[1]}/${parts[2]}/${parts[0]}` : iso;
+}
+
 /** Quick date-range presets for the register, computed from today. */
 function registerPresets(): { label: string; from: string; to: string }[] {
   const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -416,7 +422,7 @@ export default function RegisterView({
                 ) : (
                   rows.map((r) => (
                     <tr key={r.id}>
-                      <td>{r.date}</td>
+                      <td>{formatDate(r.date)}</td>
                       <td>{r.payee}</td>
                       <td>{r.ref ? "[" + r.ref + "] " : ""}{r.narration}</td>
                       <td>{r.postings.map((p) => p.account).join(", ")}</td>
@@ -543,7 +549,7 @@ function ViewRows({
   return (
     <>
       <tr className="txgroup">
-        <td>{r.date}</td>
+        <td>{formatDate(r.date)}</td>
         <td>
           <strong>{r.payee || "—"}</strong>
           {r.ref ? <span className="pill" style={{ marginLeft: 6 }}>Ref {r.ref}</span> : null}
@@ -989,7 +995,7 @@ function EditableRegister({
   function renderReadRow(r: RegisterRowDTO) {
     return (
       <tr key={r.id}>
-        <td>{r.date}</td>
+        <td>{formatDate(r.date)}</td>
         <td>{r.payee}</td>
         <td>
           {r.ref ? "[" + r.ref + "] " : ""}

@@ -258,7 +258,20 @@ export default function UploadRawDataView({
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
-                    {headers.map((h, i) => <th key={i} style={{ padding: 8, borderBottom: "2px solid var(--line)", textAlign: "left" }}>{h}</th>)}
+                    {headers.map((h, i) => (
+                      <th key={i} style={{ padding: 0, borderBottom: "2px solid var(--line)", textAlign: "left", borderRight: "1px solid var(--line)" }}>
+                        <div style={{ 
+                          resize: "horizontal", 
+                          overflow: "hidden", 
+                          minWidth: 120, 
+                          padding: 8,
+                          display: "flex",
+                          alignItems: "center"
+                        }}>
+                          {h}
+                        </div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
