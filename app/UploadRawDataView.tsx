@@ -228,7 +228,14 @@ export default function UploadRawDataView({
         {previewed && (
           <div style={{ marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <h3 style={{ margin: 0 }}>Raw Data Editor</h3>
+              <h3 style={{ margin: 0 }}>
+                Raw Data Editor
+                {originalFileName && originalFileName !== "data" && (
+                  <span style={{ color: "var(--muted)", fontWeight: "normal", fontSize: "0.85em", marginLeft: 8 }}>
+                    ({originalFileName}.csv)
+                  </span>
+                )}
+              </h3>
               <div style={{ display: "flex", gap: "10px" }}>
                 <button onClick={async () => {
                   await saveImportDraft(entityId, { headers, rows, originalFileName } as any);
