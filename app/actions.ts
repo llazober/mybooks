@@ -1022,8 +1022,65 @@ export async function buildExport(
       return inR(d.date);
     }),
   };
-  return serialize(filtered);
 }
+
+// ---- Machine Learning Mappings -------------------------------------------------
+
+export function normalizeDescription(desc: string): string {
+  if (!desc) return "";
+  // Strip numbers, dates, and special characters to find the core string
+  return desc.toLowerCase().replace(/[0-9\/\-\\]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export async function predictMappings(entityId: string) {
+  const rules = await p.mappingRule.findMany({ where: { entityId } });
+  const dict: Record<string, { accountNumber: string | null; entityCode: string | null; reference: string | null }> = {};
+  for (const r of rules) {
+    dict[r.descriptionKey] = { accountNumber: r.accountNumber, entityCode: r.entityCode, reference: r.reference };
+  }
+  return dict;
+}
+
+export async function learnMappings(entityId: string, headers: string[], rows: string[][]) {
+  const descIdx = headers.findIndex(h => h.toLowerCase() === "description");
+  const accIdx = headers.findIndex(h => h.toLowerCase() === "account" || h.toLowerCase() === "entity cod account");
+  const entIdx = headers.findIndex(h => h.toLowerCase() === "entity code");
+  const refIdx = headers.findIndex(h => h.toLowerCase() === "reference");
+
+  if (descIdx === -1) return;
+
+  for (const row of rows) {
+    const desc = row[descIdx];
+    if (!desc) continue;
+    const norm = normalizeDescription(desc);
+    if (!norm) continue;
+
+    const acc = accIdx >= 0 ? row[accIdx] : null;
+    const ent = entIdx >= 0 ? row[entIdx] : null;
+    const ref = refIdx >= 0 ? row[refIdx] : null;
+
+    if (!acc && !ent && !ref) continue;
+
+    await p.mappingRule.upsert({
+      where: { entityId_descriptionKey: { entityId, descriptionKey: norm } },
+      update: {
+        accountNumber: acc || null,
+        entityCode: ent || null,
+        reference: ref || null,
+        confidenceScore: { increment: 1 }
+      },
+      create: {
+        entityId,
+        descriptionKey: norm,
+        accountNumber: acc || null,
+        entityCode: ent || null,
+        reference: ref || null,
+        confidenceScore: 1
+      }
+    });
+  }
+}
+
 
 // ---- write path -----------------------------------------------------------
 

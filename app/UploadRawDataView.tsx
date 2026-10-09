@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getGlobalChartOfAccounts, saveImportDraft, loadImportDraft, clearImportDraft } from "./actions";
+import { getGlobalChartOfAccounts, saveImportDraft, loadImportDraft, clearImportDraft, predictMappings, learnMappings, normalizeDescription } from "./actions";
 
 function csvLine(line: string): string[] {
   const cells: string[] = [];
@@ -33,7 +33,8 @@ export default function UploadRawDataView({
   const [previewed, setPreviewed] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const [originalFileName, setOriginalFileName] = useState<string>("data");
-  const [showDraftModal, setShowDraftModal] = useState<{headers: string[], rows: string[][], originalFileName?: string}|null>(null);
+  const [autofills, setAutofills] = useState<Record<string, string>>({});
+  const [showDraftModal, setShowDraftModal] = useState<{headers: string[], rows: string[][], originalFileName?: string, autofills?: Record<string, string>}|null>(null);
 
   useEffect(() => {
     let active = true;
@@ -42,7 +43,7 @@ export default function UploadRawDataView({
     });
     loadImportDraft(entityId).then((draft) => {
       if (active && draft && draft.headers && draft.rows) {
-        setShowDraftModal({ headers: draft.headers, rows: draft.rows, originalFileName: draft.originalFileName });
+        setShowDraftModal({ headers: draft.headers, rows: draft.rows, originalFileName: draft.originalFileName, autofills: draft.autofills });
       }
     });
     return () => { active = false; };
@@ -148,12 +149,47 @@ export default function UploadRawDataView({
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const fileText = e.target?.result as string;
       const lines = fileText.trim().split(/\r?\n/).filter(Boolean).map(line => line.includes("\t") ? line.split("\t").map(c => c.trim()) : csvLine(line));
       if (lines.length > 0) {
-        setHeaders(lines[0] || []);
-        setRows(lines.slice(1));
+        const heads = lines[0] || [];
+        let body = lines.slice(1);
+        
+        const descIdx = heads.findIndex(h => h.toLowerCase() === "description");
+        const accIdx = heads.findIndex(h => h.toLowerCase() === "account" || h.toLowerCase() === "entity cod account");
+        const entIdx = heads.findIndex(h => h.toLowerCase() === "entity code");
+        const refIdx = heads.findIndex(h => h.toLowerCase() === "reference");
+        
+        if (descIdx !== -1) {
+          const dict = await predictMappings(entityId);
+          const newAutofills: Record<string, string> = {};
+          
+          body = body.map((row, rIdx) => {
+            const desc = row[descIdx];
+            if (!desc) return row;
+            const norm = normalizeDescription(desc);
+            const match = dict[norm];
+            if (!match) return row;
+            
+            const newRow = [...row];
+            const applyMatch = (idx: number, val: string | null) => {
+              if (idx >= 0 && val && newRow[idx] !== val) {
+                newAutofills[`${rIdx}-${idx}`] = newRow[idx] || "";
+                newRow[idx] = val;
+              }
+            };
+            
+            applyMatch(accIdx, match.accountNumber);
+            applyMatch(entIdx, match.entityCode);
+            applyMatch(refIdx, match.reference);
+            return newRow;
+          });
+          setAutofills(newAutofills);
+        }
+
+        setHeaders(heads);
+        setRows(body);
         setOriginalFileName(file.name.replace(/\.[^/.]+$/, ""));
         setPreviewed(true);
       }
@@ -190,6 +226,7 @@ export default function UploadRawDataView({
                 setHeaders(showDraftModal.headers);
                 setRows(showDraftModal.rows);
                 if (showDraftModal.originalFileName) setOriginalFileName(showDraftModal.originalFileName);
+                if (showDraftModal.autofills) setAutofills(showDraftModal.autofills);
                 setPreviewed(true);
                 setShowDraftModal(null);
               }}>Load Draft</button>
@@ -237,8 +274,23 @@ export default function UploadRawDataView({
                 )}
               </h3>
               <div style={{ display: "flex", gap: "10px" }}>
+                <button className="button primary" onClick={async () => {
+                  await learnMappings(entityId, headers, rows);
+                  const escapeCell = (c: string) => {
+                    if (c.includes(',') || c.includes('"') || c.includes('\n')) {
+                      return `"${c.replace(/"/g, '""')}"`;
+                    }
+                    return c;
+                  };
+                  const headStr = headers.map(escapeCell).join(',');
+                  const rowStrs = rows.map(r => r.map(escapeCell).join(','));
+                  const csvData = [headStr, ...rowStrs].join('\n');
+                  if (onNavigateToImport) onNavigateToImport(csvData);
+                }}>
+                  ✨ Learn & Proceed to Journal Import
+                </button>
                 <button onClick={async () => {
-                  await saveImportDraft(entityId, { headers, rows, originalFileName } as any);
+                  await saveImportDraft(entityId, { headers, rows, originalFileName, autofills } as any);
                   setOkMsg("Draft saved successfully!");
                   setTimeout(() => setOkMsg(null), 3000);
                 }}>
@@ -265,22 +317,6 @@ export default function UploadRawDataView({
                 }}>
                   📥 Export as CSV
                 </button>
-                {onNavigateToImport && (
-                  <button className="button primary" onClick={() => {
-                    const escapeCell = (c: string) => {
-                      if (c.includes(',') || c.includes('"') || c.includes('\n')) {
-                        return `"${c.replace(/"/g, '""')}"`;
-                      }
-                      return c;
-                    };
-                    const headStr = headers.map(escapeCell).join(',');
-                    const rowStrs = rows.map(r => r.map(escapeCell).join(','));
-                    const csvData = [headStr, ...rowStrs].join('\n');
-                    onNavigateToImport(csvData);
-                  }}>
-                    🚀 Proceed to Journal Import
-                  </button>
-                )}
                 <button onClick={() => setPreviewed(false)}>Clear & Upload Again</button>
               </div>
             </div>
@@ -313,35 +349,60 @@ export default function UploadRawDataView({
                         const isAccount = hl === "account" || hl === "entity cod account";
                         const isReadOnly = hl === "debit" || hl === "credit";
                         const val = row[cIdx] ?? "";
+                        
+                        const autoKey = `${rIdx}-${cIdx}`;
+                        const isAutofilled = autofills[autoKey] !== undefined;
 
                         if (isAccount) {
                           return (
-                            <td key={cIdx} style={{ padding: 0 }}>
-                              <CustomAccountSelect 
-                                value={val} 
-                                accounts={accounts} 
-                                onChange={(newVal) => updateCell(rIdx, cIdx, newVal)} 
-                              />
+                            <td key={cIdx} style={{ padding: 0, position: "relative" }}>
+                              <div style={{ background: isAutofilled ? "#e8f5e9" : "transparent" }}>
+                                <CustomAccountSelect 
+                                  value={val} 
+                                  accounts={accounts} 
+                                  onChange={(newVal) => {
+                                    updateCell(rIdx, cIdx, newVal);
+                                    if (isAutofilled) {
+                                      setAutofills(prev => { const n = {...prev}; delete n[autoKey]; return n; });
+                                    }
+                                  }} 
+                                />
+                              </div>
+                              {isAutofilled && (
+                                <div style={{ fontSize: "10px", color: "var(--muted)", position: "absolute", bottom: -2, right: 6, pointerEvents: "none" }}>
+                                  ✨ Auto (Orig: {autofills[autoKey] || "blank"})
+                                </div>
+                              )}
                             </td>
                           );
                         } else {
                           return (
-                            <td key={cIdx} style={{ padding: "4px 8px" }}>
+                            <td key={cIdx} style={{ padding: "4px 8px", position: "relative" }}>
                               <input 
                                 value={val} 
                                 readOnly={isReadOnly}
-                                onChange={isReadOnly ? undefined : (e) => updateCell(rIdx, cIdx, e.target.value)}
+                                onChange={isReadOnly ? undefined : (e) => {
+                                  updateCell(rIdx, cIdx, e.target.value);
+                                  if (isAutofilled) {
+                                    setAutofills(prev => { const n = {...prev}; delete n[autoKey]; return n; });
+                                  }
+                                }}
                                 style={{ 
                                   width: "100%", 
                                   minWidth: 80, 
                                   border: "1px solid transparent", 
-                                  background: "transparent",
+                                  background: isAutofilled ? "#e8f5e9" : "transparent",
                                   cursor: isReadOnly ? "default" : "text",
                                   color: isReadOnly ? "var(--muted)" : "inherit"
                                 }}
                                 onFocus={isReadOnly ? undefined : (e) => e.target.style.border = "1px solid var(--accent)"}
                                 onBlur={isReadOnly ? undefined : (e) => e.target.style.border = "1px solid transparent"}
                               />
+                              {isAutofilled && (
+                                <div style={{ fontSize: "10px", color: "var(--muted)", position: "absolute", bottom: -2, right: 6, pointerEvents: "none" }}>
+                                  ✨ Auto (Orig: {autofills[autoKey] || "blank"})
+                                </div>
+                              )}
                             </td>
                           );
                         }
