@@ -32,7 +32,8 @@ export default function UploadRawDataView({
   const [rows, setRows] = useState<string[][]>([]);
   const [previewed, setPreviewed] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
-  const [showDraftModal, setShowDraftModal] = useState<{headers: string[], rows: string[][]}|null>(null);
+  const [originalFileName, setOriginalFileName] = useState<string>("data");
+  const [showDraftModal, setShowDraftModal] = useState<{headers: string[], rows: string[][], originalFileName?: string}|null>(null);
 
   useEffect(() => {
     let active = true;
@@ -41,7 +42,7 @@ export default function UploadRawDataView({
     });
     loadImportDraft(entityId).then((draft) => {
       if (active && draft && draft.headers && draft.rows) {
-        setShowDraftModal({ headers: draft.headers, rows: draft.rows });
+        setShowDraftModal({ headers: draft.headers, rows: draft.rows, originalFileName: draft.originalFileName });
       }
     });
     return () => { active = false; };
@@ -153,6 +154,7 @@ export default function UploadRawDataView({
       if (lines.length > 0) {
         setHeaders(lines[0] || []);
         setRows(lines.slice(1));
+        setOriginalFileName(file.name.replace(/\.[^/.]+$/, ""));
         setPreviewed(true);
       }
     };
@@ -187,6 +189,7 @@ export default function UploadRawDataView({
               <button className="button primary" style={{ background: "var(--accent)", color: "white", border: "none" }} onClick={() => {
                 setHeaders(showDraftModal.headers);
                 setRows(showDraftModal.rows);
+                if (showDraftModal.originalFileName) setOriginalFileName(showDraftModal.originalFileName);
                 setPreviewed(true);
                 setShowDraftModal(null);
               }}>Load Draft</button>
@@ -228,11 +231,32 @@ export default function UploadRawDataView({
               <h3 style={{ margin: 0 }}>Raw Data Editor</h3>
               <div style={{ display: "flex", gap: "10px" }}>
                 <button onClick={async () => {
-                  await saveImportDraft(entityId, { headers, rows } as any);
+                  await saveImportDraft(entityId, { headers, rows, originalFileName } as any);
                   setOkMsg("Draft saved successfully!");
                   setTimeout(() => setOkMsg(null), 3000);
                 }}>
                   💾 Save Draft
+                </button>
+                <button onClick={() => {
+                  const escapeCell = (c: string) => {
+                    if (c.includes(',') || c.includes('"') || c.includes('\n')) {
+                      return `"${c.replace(/"/g, '""')}"`;
+                    }
+                    return c;
+                  };
+                  const headStr = headers.map(escapeCell).join(',');
+                  const rowStrs = rows.map(r => r.map(escapeCell).join(','));
+                  const csvData = [headStr, ...rowStrs].join('\n');
+                  
+                  const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = `${originalFileName}_Reviewed.csv`;
+                  link.click();
+                  URL.revokeObjectURL(url);
+                }}>
+                  📥 Export as CSV
                 </button>
                 {onNavigateToImport && (
                   <button className="button primary" onClick={() => {
