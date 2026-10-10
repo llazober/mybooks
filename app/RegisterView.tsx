@@ -333,16 +333,7 @@ export default function RegisterView({
               />
               Single-line (Excel)
             </label>
-            {singleLine ? (
-              <label className="toggle" title="Make every row editable inline">
-                <input
-                  type="checkbox"
-                  checked={editMode}
-                  onChange={(e) => setEditMode(e.target.checked)}
-                />
-                Edit
-              </label>
-            ) : null}
+            {/* Hidden per request: Edit checkbox */}
           </div>
         </div>
       </div>
@@ -679,7 +670,7 @@ function EditRows({
         <td></td>
         <td colSpan={colSpan}>
           <div className="editbar">
-            <button onClick={onAddPosting}>+ Add posting</button>
+            {/* Hidden per request: <button onClick={onAddPosting}>+ Add posting</button> */}
             <span className={"pill " + (balanced ? "good" : "bad")}>
               {balanced ? "balanced ✓" : "off by " + (sum / 100).toFixed(2)}
             </span>
@@ -1023,9 +1014,7 @@ function EditableRegister({
           Register for <strong>{filter}</strong>
           {editMode ? " · editing on — focus a row, then Save (or press Enter)" : ""}
         </span>
-        <button className="primary" onClick={startNew} disabled={!!newDraft || pending}>
-          + New transaction
-        </button>
+        {/* Hidden per request: <button className="primary" onClick={startNew} disabled={!!newDraft || pending}>+ New transaction</button> */}
       </div>
       <table className="reg flat reg-edit">
         <thead>
