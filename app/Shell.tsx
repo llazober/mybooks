@@ -88,7 +88,7 @@ export default function Shell({ initialEntities, session }: { initialEntities: E
       const t = localStorage.getItem("beanbooks.theme");
       if (t === "pretty" || t === "dark" || t === "default" || t === "america250" || t === "modern") return t as any;
     }
-    return "pretty";
+    return "dark";
   });
   const [collapsed, setCollapsed] = useState(false);
   const [reseeding, setReseeding] = useState(false);
