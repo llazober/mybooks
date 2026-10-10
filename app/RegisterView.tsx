@@ -675,9 +675,11 @@ function EditRows({
               {balanced ? "balanced ✓" : "off by " + (sum / 100).toFixed(2)}
             </span>
             <span style={{ flex: 1 }} />
+            {/* Hidden per request:
             <button className="primary" onClick={onSave} disabled={pending || !balanced}>
               {pending ? "Saving…" : "Save"}
             </button>
+            */}
             <button onClick={onCancel} disabled={pending}>
               Cancel
             </button>
